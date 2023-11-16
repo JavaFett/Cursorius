@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "cursorius"
+version = "0.0.1"
+description = "Package for delivery messages to telegram group/users and smtp clients."
+authors = ["Vadim Politov"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.11.5"
+aiohttp = "~3.8.5"
+requests = "~2.30.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
