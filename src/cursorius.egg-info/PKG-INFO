@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: cursorius
+Version: 0.0.1
+Summary: Package for delivery messages to telegram group/users and smtp clients.
+Author-email: Vadim Politov <vpolitov@vostok-electra.ru>
+Project-URL: Homepage, https://git.vostok-electra.ru/python_public_libs/cursorius
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# Cursorius
+
+`TgCursorius` for delivery message to telegram client
+
+`SMPTCursorius` for delivery message to smtp client
