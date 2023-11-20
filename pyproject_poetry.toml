@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cursorius"
-version = "0.0.1"
+version = "0.1.0"
 description = "Package for delivery messages to telegram group/users and smtp clients."
 authors = ["Vadim Politov"]
 readme = "README.md"

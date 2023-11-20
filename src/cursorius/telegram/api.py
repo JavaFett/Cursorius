@@ -38,7 +38,7 @@ class TelegramCursorius:
         except:
             return
 
-    async def asend(self, **kwargs):
+    async def send_async(self, **kwargs):
         try:
             url = self._get_url(**kwargs)
             await self._execute_request_async(url)
