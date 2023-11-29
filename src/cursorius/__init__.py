@@ -2,10 +2,12 @@ import logging
 
 from .telegram import TelegramCursorius
 from .smtp import SMTPCursorius
+from .utils import set_logging_handler
 
 __all__ = (
     "TelegramCursorius",
     "SMTPCursorius",
+    "set_logging_handler"
 )
 
 

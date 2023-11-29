@@ -3,6 +3,7 @@ README.md
 pyproject.toml
 src/cursorius/__init__.py
 src/cursorius/__main__.py
+src/cursorius/utils.py
 src/cursorius.egg-info/PKG-INFO
 src/cursorius.egg-info/SOURCES.txt
 src/cursorius.egg-info/dependency_links.txt

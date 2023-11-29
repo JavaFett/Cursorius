@@ -2,13 +2,13 @@ import asyncio
 import os
 from cursorius.smtp import SMTPCursorius
 from cursorius.telegram import TelegramCursorius
+from cursorius.utils import set_logging_handler
 
 
 NOTIFICATIONS_TELEGRAM_TOKEN = os.getenv('NOTIFICATIONS_TELEGRAM_TOKEN')
 NOTIFICATIONS_TELEGRAM_RECEIVER_ID = os.getenv(
     'NOTIFICATIONS_TELEGRAM_RECEIVER_ID')
-
-TEMPLATE_TELEGRAM_MESSAGE = "<b>[{instance}] [ {app_name} ]</b><br> {message}<br> {exc_type} | {exc_value}"
+TEMPLATE_TELEGRAM_MESSAGE = "<b>[ {instance} {app_name} ]</b> \n{message} \n<i>{exc_type}</i> | {exc_value}"
 
 SMTP_SERVER = os.getenv('SMTP_SERVER')
 SMTP_PORT = os.getenv('SMTP_PORT')
@@ -19,17 +19,26 @@ SENDER_PASSWORD = os.getenv('SENDER_PASSWORD')
 async def run_cli_tg_cursorius():
     tgc = TelegramCursorius(
         TEMPLATE_TELEGRAM_MESSAGE,
-        'HTML',
         NOTIFICATIONS_TELEGRAM_TOKEN,
-        NOTIFICATIONS_TELEGRAM_RECEIVER_ID
+        NOTIFICATIONS_TELEGRAM_RECEIVER_ID,
+        'HTML',
+        explain=True
     )
 
     await tgc.send_async(
-        instance='DEV',
-        app_name='Test-application',
-        message='Syntax error in \'Hell0 World!\'!',
+        instance='ASYNC',
+        app_name='TestApplication',
+        message='Syntax error in Hell0 World',
         exc_type='SyntaxError',
-        exc_value='Invalid syntax'
+        exc_value='Invalid syntax',
+    )
+
+    tgc.send(
+        instance='SYNC',
+        app_name='TestApplication',
+        message='Syntax error in Hell0 World',
+        exc_type='SyntaxError',
+        exc_value='Invalid syntax',
     )
 
 

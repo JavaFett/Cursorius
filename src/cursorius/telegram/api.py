@@ -10,7 +10,6 @@ log_handler.setFormatter(
     logging.Formatter(
         "{asctime} | {name} | {levelname} | {message}", style="{")
 )
-logger.addHandler(log_handler)
 
 PARSE_MODE: TypeAlias = Literal["HTML", "MarkdownV2"]
 
@@ -19,17 +18,34 @@ class TelegramCursorius:
     """
     Delivery a message to a recipient using Telegram.
 
-    :param str template: example: '<b>[{INSTANCE}] [ {APP_NAME} ]></b><br> {MESSAGE}\n {EXC_TYPE} | {EXC_VALUE}'
-    :param str parse_mode: 'HTML' or 'MarkdownV2'
+    :param str template:
+
+    `HTML` example: "<b>[ {instance} {app_name} ]</b> \\n{message} \\n<i>{exc_type}</i> | {exc_value}"
+
+    `MarkdownV2` example: "*[ {instance} {app_name} ]* \\n{message} \\n_{exc_type}_ \| {exc_value}"
+
+    `Plain text` example: "[ {instance} {app_name} ] \\n{message} \\n{exc_type} | {exc_value}"
+
     :param str token: Telegram bot token
     :param str chat_id: Telegram chat id
+    :param str parse_mode: 'HTML' or 'MarkdownV2' or None(Plain text)
+    :param bool explain: By default the library does not setup any handler other than the NullHandler.
+    Toggle this to True to add a StreamHandler.
     """
 
-    def __init__(self, template: str, parse_mode: PARSE_MODE, token: str, chat_id: str):
+    def __init__(
+        self,
+        template: str,
+        token: str,
+        chat_id: str,
+        parse_mode: PARSE_MODE | None = None,
+        explain: bool = False
+    ) -> None:
         self._template = self._validate_template(template)
-        self._parse_mode = parse_mode
         self._token = token
         self._chat_id = chat_id
+        self._parse_mode = parse_mode
+        self._enable_logging(explain)
 
     def send(self, **kwargs):
         try:
@@ -45,14 +61,6 @@ class TelegramCursorius:
         except:
             return
 
-    def _validate_template(self, template: str) -> str:
-        _template = template.replace('\n', '%0A')
-        valid_template = _template.replace('<br>', '%0A')
-
-        # TODO: Implement additional validation logic here
-
-        return valid_template
-
     def _get_url(self, **kwargs) -> str:
         message = self._get_format_message(**kwargs)
         url = self._fill_url(message)
@@ -63,11 +71,9 @@ class TelegramCursorius:
         try:
             result = self._template.format(**kwargs)
         except KeyError as e:
-            logger.warning('KeyError: ' + str(e), exc_info=True)
-            raise e
+            logger.error(f'KeyError: {str(e)}', exc_info=True)
         except Exception as e:
-            logger.warning('Unexpected error: ' + str(e), exc_info=True)
-            raise e
+            logger.error(f'Error: {str(e)}', exc_info=True)
 
         return result
 
@@ -75,29 +81,38 @@ class TelegramCursorius:
         url = "https://api.telegram.org/bot" + self._token \
             + "/sendMessage?chat_id=" + self._chat_id \
             + "&text=" + text \
-            + "&parse_mode=" + self._parse_mode
+
+        if self._parse_mode is not None:
+            url += "&parse_mode=" + self._parse_mode
+
+        return url
+
+    def _validate_template(self, url):
+        url = url.replace('\n', '%0A')
 
         return url
 
     def _execute_request(self, url):
         try:
             response = requests.get(url)
-            response.raise_for_status()
-        except requests.HTTPError as e:
-            logger.warning('HTTPError: ' + str(e), exc_info=True)
-            raise e
+            response_json = response.json()
+            if response.json()['ok'] is False:
+                logger.warning(
+                    f'Error: {response_json["error_code"]} - {response_json["description"]}')
         except Exception as e:
-            logger.warning('Unexpected error: ' + str(e), exc_info=True)
-            raise e
+            logger.error(f'Error: {str(e)}', exc_info=True)
 
     async def _execute_request_async(self, url):
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
-                    response.raise_for_status()
-        except aiohttp.ClientResponseError as e:
-            logger.warning('ClientResponseError: ' + str(e), exc_info=True)
-            raise e
+                    response_json = await response.json()
+                    if response_json['ok'] is False:
+                        logger.warning(
+                            f'Error: {response_json["error_code"]} - {response_json["description"]}')
         except Exception as e:
-            logger.warning('Unexpected error: ' + str(e), exc_info=True)
-            raise e
+            logger.error(f'Error: {str(e)}', exc_info=True)
+
+    def _enable_logging(self, explain: bool):
+        if explain:
+            logger.addHandler(log_handler)
